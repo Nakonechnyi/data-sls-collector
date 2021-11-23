@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package n.tony.entity;
+
+import "akkaserverless/annotations.proto";
+
+option (akkaserverless.file).value_entity = {
+    name: "MeterReportCollector"
+    entity_type: "meter-report"
+    state: "MeterReport"
+};
+
+message MeterTake {
+    int64 unix_time = 1;
+    int32 value = 2;
+    int32 order_number = 3;
+}
+
+message MeterReport {
+    string meter_id = 1 [(akkaserverless.field).entity_key = true];
+    string timestamp = 2;
+    repeated MeterTake takes = 3;
+}

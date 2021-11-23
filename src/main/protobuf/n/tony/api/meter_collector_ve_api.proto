@@ -1,0 +1,52 @@
+// This is the public API offered by your entity.
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "akkaserverless/annotations.proto";
+import "google/api/annotations.proto";
+
+package n.tony.api;
+
+message MeterTakeDto {
+    int64 unix_time = 1;
+    int32 value = 2;
+    int32 order_number = 3;
+}
+
+message MeterReportDto {
+    string meter_id = 1 [(akkaserverless.field).entity_key = true];
+    string timestamp = 2;
+    repeated MeterTakeDto takes = 3;
+}
+
+message StatusDto {
+    int32 status_code = 1;
+}
+
+message GetCollectedReportDto {
+    string meter_id = 1 [(akkaserverless.field).entity_key = true];
+}
+
+message CollectedReportDto {
+    string meter_id = 1 [(akkaserverless.field).entity_key = true];
+    repeated MeterTakeDto takes = 2;
+}
+
+
+service MeterCollectorService {
+    option (akkaserverless.service) = {
+        type : SERVICE_TYPE_ENTITY
+        component : "n.tony.entity.MeterReportCollector"
+    };
+
+    rpc Report(MeterReportDto) returns (StatusDto) {
+        option (google.api.http) = {
+            post: "/ve/meter/report"
+            body: "*"
+        };
+    }
+
+    rpc GetReport(GetCollectedReportDto) returns (CollectedReportDto) {
+        option (google.api.http).get = "/ve/meter/report/{meter_id}";
+    }
+}
